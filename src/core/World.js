@@ -114,6 +114,10 @@ function World ( o ) {
     this.gravity = new Vec3(0,-9.8,0);
     if( o.gravity !== undefined ) this.gravity.fromArray( o.gravity );
 
+    // The drag of the world
+    this.drag = 0;
+    if(o.drag !== undefined) this.drag = o.drag;
+
 
 
     var numShapeTypes = 5;//4;//3;
@@ -166,7 +170,7 @@ Object.assign( World.prototype, {
     World: true,
 
     play: function(){
- 
+
         if( this.timer !== null ) return;
 
         var _this = this;
@@ -569,6 +573,11 @@ Object.assign( World.prototype, {
             if( base.isLonely() ){// update single body
                 if( base.isDynamic ){
                     base.linearVelocity.addScaledVector( this.gravity, this.timeStep );
+                    base.linearVelocity.multiply({
+                        x: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.x, 2))) / 100,
+                        y: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.y, 2))) / 100,
+                        z: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.z, 2))) / 100,
+                    });
                     /*base.linearVelocity.x+=this.gravity.x*this.timeStep;
                     base.linearVelocity.y+=this.gravity.y*this.timeStep;
                     base.linearVelocity.z+=this.gravity.z*this.timeStep;*/
@@ -647,6 +656,11 @@ Object.assign( World.prototype, {
                 body = this.islandRigidBodies[j];
                 if(body.isDynamic){
                     body.linearVelocity.addEqual(gVel);
+                    body.linearVelocity.multiply({
+                        x: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.x, 2))) / 100,
+                        y: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.y, 2))) / 100,
+                        z: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.z, 2))) / 100,
+                    });
                     /*body.linearVelocity.x+=gx;
                     body.linearVelocity.y+=gy;
                     body.linearVelocity.z+=gz;*/
@@ -742,7 +756,7 @@ Object.assign( World.prototype, {
     },
 
     // add someting to world
-    
+
     add: function( o ){
 
         o = o || {};
@@ -792,7 +806,7 @@ Object.assign( World.prototype, {
         if( s.length === 2 ){ s[2] = s[0]; }
         s = s.map( function(x) { return x * invScale; } );
 
-        
+
 
         // body physics settings
         var sc = new ShapeConfig();
@@ -843,7 +857,7 @@ Object.assign( World.prototype, {
 
             if( p2[n] !== undefined ) sc.relativePosition.set( p2[n], p2[n+1], p2[n+2] );
             if( r2[n] !== undefined ) sc.relativeRotation.setQuat( new Quat().setFromEuler( r2[n], r2[n+1], r2[n+2] ) );
-            
+
             switch( type[i] ){
                 case "sphere": shape = new Sphere( sc, s[n] ); break;
                 case "cylinder": shape = new Cylinder( sc, s[n], s[n+1] ); break;
@@ -852,7 +866,7 @@ Object.assign( World.prototype, {
             }
 
             body.addShape( shape );
-            
+
         }
 
         // body can sleep or not

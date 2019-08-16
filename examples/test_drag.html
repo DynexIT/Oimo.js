@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Oimo.js Inertial Dampening</title>
+    <title>Oimo.js Drag</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=11"/>
@@ -17,7 +17,7 @@
 <body>
 <canvas id="canvas"></canvas>
 <div id='interface'>
-    <input type="number" name="dampening" min="0" max="100" value="20" id='MaxNumber'>
+    <input type="number" name="drag" min="0" max="100" value="30" id='drag' onchange=drag()>
     <input type="submit">
     <input type="number" name="gravity" min="-20" max="20" value="-10" id='gravity' onchange=gravity()>
 </div>
@@ -43,12 +43,13 @@
 	let meshs = [];
 	let bodys = [];
 
+    let inputDrag = 30;
 
 	init();
 	loop();
 
 	function initPhysics() {
-		world = new OIMO.World( { info: true, worldscale: 100 } );
+		world = new OIMO.World( { info: true, worldscale: 100} );
 		populate();
 	}
 
@@ -167,6 +168,10 @@
 	}
 
     function populate(){
+		world.drag = 0;
+		setTimeout(()=>{
+			world.drag = inputDrag
+        }, 300);
 		clearMesh();
 		world.clear();
 		bodys=[];
@@ -237,6 +242,10 @@
 	function gravity(g){
 		nG = document.getElementById("gravity").value
 		world.gravity = new OIMO.Vec3(0, nG, 0);
+	}
+	function drag(d){
+		nD = document.getElementById("drag").value
+		inputDrag = nD;
 	}
 
 	function addStaticBox(size, position, rotation) {
