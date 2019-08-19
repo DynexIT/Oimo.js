@@ -38,6 +38,7 @@ import { SliderJoint } from '../constraint/joint/SliderJoint';
 import { WheelJoint } from '../constraint/joint/WheelJoint';
 
 import { RigidBody } from './RigidBody';
+import DragMath from "../math/Drag";
 
 /**
  * The class of physical computing world.
@@ -575,9 +576,7 @@ Object.assign( World.prototype, {
             if( base.isLonely() ){// update single body
                 if( base.isDynamic ){
                     base.linearVelocity.addScaledVector( this.gravity, this.timeStep );
-                    base.linearVelocity.x *= this.drag;
-                    base.linearVelocity.y *= this.drag;
-                    base.linearVelocity.z *= this.drag;
+                    DragMath.ApplyDragToBody(base, this.drag);
                     /*base.linearVelocity.x+=this.gravity.x*this.timeStep;
                     base.linearVelocity.y+=this.gravity.y*this.timeStep;
                     base.linearVelocity.z+=this.gravity.z*this.timeStep;*/
@@ -656,9 +655,7 @@ Object.assign( World.prototype, {
                 body = this.islandRigidBodies[j];
                 if(body.isDynamic){
                     body.linearVelocity.addEqual(gVel);
-                    body.linearVelocity.x *= this.drag;
-                    body.linearVelocity.y *= this.drag;
-                    body.linearVelocity.z *= this.drag;
+                    DragMath.ApplyDragToBody(body, this.drag);
                     /*body.linearVelocity.x+=gx;
                     body.linearVelocity.y+=gy;
                     body.linearVelocity.z+=gz;*/
