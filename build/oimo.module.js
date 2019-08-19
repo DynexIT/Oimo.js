@@ -11332,8 +11332,8 @@ function World ( o ) {
     if( o.gravity !== undefined ) this.gravity.fromArray( o.gravity );
 
     // The drag of the world
-    this.drag = 0;
-    if(o.drag !== undefined) this.drag = o.drag;
+    this.drag = 1;
+    if(o.drag !== undefined) this.drag = ( 1 - (o.drag / 100) );
 
 
 
@@ -11790,11 +11790,9 @@ Object.assign( World.prototype, {
             if( base.isLonely() ){// update single body
                 if( base.isDynamic ){
                     base.linearVelocity.addScaledVector( this.gravity, this.timeStep );
-                    base.linearVelocity.multiply({
-                        x: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.x, 2))) / 100,
-                        y: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.y, 2))) / 100,
-                        z: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.z, 2))) / 100,
-                    });
+                    base.linearVelocity.x *= this.drag;
+                    base.linearVelocity.y *= this.drag;
+                    base.linearVelocity.z *= this.drag;
                     /*base.linearVelocity.x+=this.gravity.x*this.timeStep;
                     base.linearVelocity.y+=this.gravity.y*this.timeStep;
                     base.linearVelocity.z+=this.gravity.z*this.timeStep;*/
@@ -11873,11 +11871,9 @@ Object.assign( World.prototype, {
                 body = this.islandRigidBodies[j];
                 if(body.isDynamic){
                     body.linearVelocity.addEqual(gVel);
-                    body.linearVelocity.multiply({
-                        x: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.x, 2))) / 100,
-                        y: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.y, 2))) / 100,
-                        z: (100 - (this.drag / 2 * Math.pow(base.linearVelocity.z, 2))) / 100,
-                    });
+                    body.linearVelocity.x *= this.drag;
+                    body.linearVelocity.y *= this.drag;
+                    body.linearVelocity.z *= this.drag;
                     /*body.linearVelocity.x+=gx;
                     body.linearVelocity.y+=gy;
                     body.linearVelocity.z+=gz;*/
