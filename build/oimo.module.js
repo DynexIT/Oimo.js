@@ -11380,6 +11380,9 @@ function World ( o ) {
     this.islandStack = [];
     this.islandConstraints = [];
 
+    this.bodiesSleepingCallback = ()=>{};
+    this.transmitSleepCallback = true;
+
 }
 
 Object.assign( World.prototype, {
@@ -11782,11 +11785,10 @@ Object.assign( World.prototype, {
         this.numIslands = 0;
 
         // build and solve simulation islands
-
+        let allAsleep = true;
         for( var base = this.rigidBodies; base !== null; base = base.next ){
-
             if( base.addedToIsland || base.isStatic || base.sleeping ) continue;// ignore
-
+            allAsleep &= (base.sleeping);
             if( base.isLonely() ){// update single body
                 if( base.isDynamic ){
                     base.linearVelocity.addScaledVector( this.gravity, this.timeStep );
@@ -11955,7 +11957,11 @@ Object.assign( World.prototype, {
         //------------------------------------------------------
         //   END SIMULATION
         //------------------------------------------------------
-
+        if (allAsleep && this.transmitSleepCallback) {
+            this.bodiesSleepingCallback(new Date().getTime());
+        } else if(!allAsleep) {
+            this.transmitSleepCallback = true;
+        }
         if( stat ) this.performance.calcEnd();
 
         if( this.postLoop !== null ) this.postLoop();
@@ -12207,7 +12213,18 @@ Object.assign( World.prototype, {
 
     },
 
-
+    // Allows to bind a callback to be called when all bodies are sleeping. Only one can be set at a time.
+    allBodiesAsleep: function(callback) {
+        if(!callback) this.bodiesSleepingCallback = ()=>{};
+        else{
+            this.bodiesSleepingCallback = ()=>{
+                if(this.transmitSleepCallback) {
+                    this.transmitSleepCallback = false;
+                    callback();
+                }
+            };
+        }
+    }
 } );
 
 export { AABB_PROX, BODY_DYNAMIC, BODY_GHOST, BODY_KINEMATIC, BODY_NULL, BODY_STATIC, BR_BOUNDING_VOLUME_TREE, BR_BRUTE_FORCE, BR_NULL, BR_SWEEP_AND_PRUNE, BallAndSocketJoint, Box, Cylinder, DistanceJoint, HingeJoint, InfoDisplay, JOINT_BALL_AND_SOCKET, JOINT_DISTANCE, JOINT_HINGE, JOINT_NULL, JOINT_PRISMATIC, JOINT_SLIDER, JOINT_WHEEL, JointConfig, LimitMotor, Mat33, _Math as Math, Particle, Plane, PrismaticJoint, Quat, REVISION, RigidBody, SHAPE_BOX, SHAPE_CYLINDER, SHAPE_NULL, SHAPE_PARTICLE, SHAPE_PLANE, SHAPE_SPHERE, SHAPE_TETRA, Shape, ShapeConfig, SliderJoint, Sphere, Vec3, WheelJoint, World, printError };

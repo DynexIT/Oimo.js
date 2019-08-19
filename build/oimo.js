@@ -11386,6 +11386,9 @@
 	    this.islandStack = [];
 	    this.islandConstraints = [];
 
+	    this.bodiesSleepingCallback = ()=>{};
+	    this.transmitSleepCallback = true;
+
 	}
 
 	Object.assign( World.prototype, {
@@ -11788,11 +11791,10 @@
 	        this.numIslands = 0;
 
 	        // build and solve simulation islands
-
+	        let allAsleep = true;
 	        for( var base = this.rigidBodies; base !== null; base = base.next ){
-
 	            if( base.addedToIsland || base.isStatic || base.sleeping ) continue;// ignore
-
+	            allAsleep &= (base.sleeping);
 	            if( base.isLonely() ){// update single body
 	                if( base.isDynamic ){
 	                    base.linearVelocity.addScaledVector( this.gravity, this.timeStep );
@@ -11961,7 +11963,11 @@
 	        //------------------------------------------------------
 	        //   END SIMULATION
 	        //------------------------------------------------------
-
+	        if (allAsleep && this.transmitSleepCallback) {
+	            this.bodiesSleepingCallback(new Date().getTime());
+	        } else if(!allAsleep) {
+	            this.transmitSleepCallback = true;
+	        }
 	        if( stat ) this.performance.calcEnd();
 
 	        if( this.postLoop !== null ) this.postLoop();
@@ -12213,7 +12219,18 @@
 
 	    },
 
-
+	    // Allows to bind a callback to be called when all bodies are sleeping. Only one can be set at a time.
+	    allBodiesAsleep: function(callback) {
+	        if(!callback) this.bodiesSleepingCallback = ()=>{};
+	        else{
+	            this.bodiesSleepingCallback = ()=>{
+	                if(this.transmitSleepCallback) {
+	                    this.transmitSleepCallback = false;
+	                    callback();
+	                }
+	            };
+	        }
+	    }
 	} );
 
 	exports.AABB_PROX = AABB_PROX;
